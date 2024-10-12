@@ -1,36 +1,25 @@
-"use client";
+'use client';
 
-import { auth } from "@/firebase";
-import {
-  ConfirmationResult,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
-} from "firebase/auth";
-import React, { FormEvent, useEffect, useState, useTransition } from "react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Input } from "@/components/ui/input";
-import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
+import { auth } from '@/firebase';
+import { ConfirmationResult, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
+import React, { FormEvent, useEffect, useState, useTransition } from 'react';
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from '@/components/ui/input-otp';
+import { Input } from '@/components/ui/input';
+import { Button } from './ui/button';
+import { useRouter } from 'next/navigation';
 
 function OtpLogin() {
   const router = useRouter();
 
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState("");
+  const [success, setSuccess] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
 
-  const [recaptchaVerifier, setRecaptchaVerifier] =
-    useState<RecaptchaVerifier | null>(null);
+  const [recaptchaVerifier, setRecaptchaVerifier] = useState<RecaptchaVerifier | null>(null);
 
-  const [confirmationResult, setConfirmationResult] =
-    useState<ConfirmationResult | null>(null);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   const [isPending, startTransition] = useTransition();
 
@@ -43,13 +32,9 @@ function OtpLogin() {
   }, [resendCountdown]);
 
   useEffect(() => {
-    const recaptchaVerifier = new RecaptchaVerifier(
-      auth,
-      "recaptcha-container",
-      {
-        size: "invisible",
-      }
-    );
+    const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+      size: 'invisible'
+    });
 
     setRecaptchaVerifier(recaptchaVerifier);
 
@@ -67,20 +52,20 @@ function OtpLogin() {
 
   const verifyOtp = async () => {
     startTransition(async () => {
-      setError("");
+      setError('');
 
       if (!confirmationResult) {
-        setError("Please request OTP first.");
+        setError('Please request OTP first.');
         return;
       }
 
       try {
         await confirmationResult?.confirm(otp);
-        router.replace("/");
+        router.replace('/');
       } catch (error) {
         console.log(error);
 
-        setError("Failed to verify OTP. Please check the OTP.");
+        setError('Failed to verify OTP. Please check the OTP.');
       }
     });
   };
@@ -91,31 +76,27 @@ function OtpLogin() {
     setResendCountdown(60);
 
     startTransition(async () => {
-      setError("");
+      setError('');
 
       if (!recaptchaVerifier) {
-        return setError("RecaptchaVerifier is not initialized.");
+        return setError('RecaptchaVerifier is not initialized.');
       }
 
       try {
-        const confirmationResult = await signInWithPhoneNumber(
-          auth,
-          phoneNumber,
-          recaptchaVerifier
-        );
+        const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
 
         setConfirmationResult(confirmationResult);
-        setSuccess("OTP sent successfully.");
+        setSuccess('OTP sent successfully.');
       } catch (err: any) {
         console.log(err);
         setResendCountdown(0);
 
-        if (err.code === "auth/invalid-phone-number") {
-          setError("Invalid phone number. Please check the number.");
-        } else if (err.code === "auth/too-many-requests") {
-          setError("Too many requests. Please try again later.");
+        if (err.code === 'auth/invalid-phone-number') {
+          setError('Invalid phone number. Please check the number.');
+        } else if (err.code === 'auth/too-many-requests') {
+          setError('Too many requests. Please try again later.');
         } else {
-          setError("Failed to send OTP. Please try again.");
+          setError('Failed to send OTP. Please try again.');
         }
       }
     });
@@ -128,8 +109,7 @@ function OtpLogin() {
         className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-green-600"
         viewBox="0 0 100 101"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+        xmlns="http://www.w3.org/2000/svg">
         <path
           d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
           fill="currentColor"
@@ -147,20 +127,13 @@ function OtpLogin() {
     <div className="flex flex-col justify-center items-center">
       {!confirmationResult && (
         <form onSubmit={requestOtp}>
-          <Input
-            className="text-black"
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-          />
-          <p className="text-xs text-gray-400 mt-2">
-            Please enter your number with the country code (i.e. +44 for UK)
-          </p>
+          <Input className="text-black" type="tel" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} />
+          <p className="text-xs text-gray-400 mt-2">Please enter your number with the country code (i.e. +44 for UK)</p>
         </form>
       )}
 
       {confirmationResult && (
-        <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
+        <InputOTP maxLength={6} value={otp} onChange={value => setOtp(value)}>
           <InputOTPGroup>
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
@@ -175,16 +148,8 @@ function OtpLogin() {
         </InputOTP>
       )}
 
-      <Button
-        disabled={!phoneNumber || isPending || resendCountdown > 0}
-        onClick={() => requestOtp()}
-        className="mt-5"
-      >
-        {resendCountdown > 0
-          ? `Resend OTP in ${resendCountdown}`
-          : isPending
-          ? "Sending OTP"
-          : "Send OTP"}
+      <Button disabled={!phoneNumber || isPending || resendCountdown > 0} onClick={() => requestOtp()} className="mt-5">
+        {resendCountdown > 0 ? `Resend OTP in ${resendCountdown}` : isPending ? 'Sending OTP' : 'Send OTP'}
       </Button>
 
       <div className="p-10 text-center">
